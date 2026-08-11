@@ -1,0 +1,75 @@
+/* 👑 Google Fonts: Great Vibes (El Yazısı) ve Montserrat (Okunabilir Sans) */
+@import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Ocean Blue Palette (Matching the new Hero background) */
+  --color-ocean-faint: #e0f3ff;
+  --color-ocean-light: #1a5c92; /* Lighter blue for hover states or glowing effects */
+  --color-ocean-main: #0b3960; /* Rich mid-tone blue */
+  --color-ocean-dark: #031224; /* The very dark navy blue for section backgrounds */
+
+  --color-gold-accent: #d4af37; /* Kept the gold as it contrasts beautifully */
+
+  /* Font Families */
+  --font-script: "Great Vibes";
+  --font-sans: "Montserrat", sans-serif;
+}
+
+@layer base {
+  body {
+    /* Set the default background to the darkest blue */
+    @apply font-sans antialiased text-white bg-ocean-faint;
+  }
+
+  /* Shared heading properties */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-white;
+  }
+
+  /* 
+    👑 BEAUTY SALON TYPOGRAPHY HIERARCHY
+  */
+
+  h1 {
+    @apply font-script text-5xl md:text-6xl lg:text-7xl font-normal leading-[1.1] tracking-normal;
+  }
+
+  h2 {
+    @apply font-script text-4xl md:text-5xl lg:text-6xl font-normal leading-[1.2] tracking-normal text-gold-accent;
+  }
+
+  h3 {
+    @apply font-sans text-2xl md:text-3xl lg:text-4xl font-medium leading-snug;
+  }
+
+  h4 {
+    @apply font-sans text-xl md:text-2xl lg:text-3xl font-medium leading-snug;
+  }
+
+  h5 {
+    @apply font-sans text-lg md:text-xl lg:text-2xl font-medium leading-normal;
+  }
+
+  h6 {
+    @apply font-sans text-sm md:text-base font-semibold leading-normal tracking-[0.15em] uppercase text-white/70;
+  }
+
+  p {
+    @apply font-sans text-base md:text-lg leading-relaxed text-white/80 mb-4 font-light;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
