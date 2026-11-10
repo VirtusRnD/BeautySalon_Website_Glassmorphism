@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { config } from "../config";
+import { submitForm } from "../lib/submitForm";
 import { FiMail, FiPhone, FiArrowRight } from "react-icons/fi";
 import { FaGoogle, FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -8,6 +9,18 @@ import { motion } from "framer-motion";
 const Footer = () => {
   const { footer } = config;
   const { t } = useTranslation();
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | mailto | error
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const values = Object.fromEntries(new FormData(e.currentTarget));
+    setStatus("sending");
+    try {
+      setStatus(await submitForm(values, { email: config.footer.brand.email, subject: t("footer.newsletter.title") }));
+    } catch {
+      setStatus("error");
+    }
+  }
 
   const companyLinksText =
     t("footer.links.company", { returnObjects: true }) || [];
@@ -57,18 +70,25 @@ const Footer = () => {
           <p className="font-sans text-sm md:text-base text-white/80 max-w-xl mx-auto mb-8 font-light">
             {t("footer.newsletter.description")}
           </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
+          {status === "sent" || status === "mailto" ? (
+<p className="font-sans font-medium text-sm md:text-base py-3">{t(status === "sent" ? "footer.newsletter.success" : "footer.newsletter.mailto")}</p>
+) : (
+<form
+            onSubmit={handleSubmit}
             className="flex flex-col sm:flex-row items-center w-full max-w-lg mx-auto gap-4 sm:gap-0 sm:bg-white/10 sm:border sm:border-white/20 sm:rounded-full sm:p-1.5 sm:backdrop-blur-md focus-within:border-gold-accent transition-colors duration-300"
           >
-            <input
+            <input name="email"
               type="email"
               placeholder={t("footer.newsletter.placeholder")}
               className="w-full bg-white/10 sm:bg-transparent border border-white/20 sm:border-transparent rounded-full sm:rounded-none text-white placeholder-white/50 px-6 py-3.5 sm:py-3 font-sans text-sm outline-none text-center sm:text-left focus:border-gold-accent sm:focus:border-transparent transition-colors backdrop-blur-md sm:backdrop-blur-none"
               required
             />
+            {status === "error" && (
+              <p role="alert" className="text-red-600 text-sm font-medium">{t("footer.newsletter.error")}</p>
+            )}
             <button
               type="submit"
+              disabled={status === "sending"}
               className="w-full sm:w-auto flex flex-shrink-0 items-center justify-center gap-2 bg-ocean-light hover:bg-gold-accent text-white px-8 py-3.5 sm:py-3 rounded-full font-medium text-sm transition-colors duration-300 shadow-md"
             >
               {t("footer.newsletter.buttonText")}
@@ -77,6 +97,7 @@ const Footer = () => {
               </div>
             </button>
           </form>
+)}
         </motion.div>
       </div>
 

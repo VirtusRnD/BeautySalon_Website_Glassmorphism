@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { config } from "../config";
+import { submitForm } from "../lib/submitForm";
 import { FiMapPin, FiPhone, FiClock, FiSend } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -7,6 +8,18 @@ import { motion } from "framer-motion";
 const ContactSection = () => {
   const { contact } = config;
   const { t } = useTranslation(); // 👑 Added
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | mailto | error
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const values = Object.fromEntries(new FormData(e.currentTarget));
+    setStatus("sending");
+    try {
+      setStatus(await submitForm(values, { email: config.footer.brand.email, subject: t("contact.title") }));
+    } catch {
+      setStatus("error");
+    }
+  }
 
   // 👑 Fetch the text info array safely
   const infoTexts = t("contact.info", { returnObjects: true }) || [];
@@ -105,18 +118,21 @@ const ContactSection = () => {
               ))}
             </div>
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
+            {status === "sent" || status === "mailto" ? (
+<p className="font-sans font-medium text-sm md:text-base py-4">{t(status === "sent" ? "contact.form.success" : "contact.form.mailto")}</p>
+) : (
+<form
+              onSubmit={handleSubmit}
               className="flex flex-col gap-4"
             >
               <div className="flex flex-col sm:flex-row gap-4 w-full">
-                <input
+                <input name="name"
                   type="text"
                   placeholder={t("contact.form.namePlaceholder")}
                   className="w-full bg-white/40 border border-white/60 text-ocean-dark placeholder-ocean-dark/40 px-5 py-3.5 rounded-xl font-sans text-sm outline-none focus:bg-white/80 focus:border-ocean-main transition-all duration-300 shadow-sm"
                   required
                 />
-                <input
+                <input name="email"
                   type="email"
                   placeholder={t("contact.form.emailPlaceholder")}
                   className="w-full bg-white/40 border border-white/60 text-ocean-dark placeholder-ocean-dark/40 px-5 py-3.5 rounded-xl font-sans text-sm outline-none focus:bg-white/80 focus:border-ocean-main transition-all duration-300 shadow-sm"
@@ -124,21 +140,28 @@ const ContactSection = () => {
                 />
               </div>
 
-              <input
+              <input name="service"
                 type="text"
                 placeholder={t("contact.form.servicePlaceholder")}
                 className="w-full bg-white/40 border border-white/60 text-ocean-dark placeholder-ocean-dark/40 px-5 py-3.5 rounded-xl font-sans text-sm outline-none focus:bg-white/80 focus:border-ocean-main transition-all duration-300 shadow-sm"
               />
 
-              <textarea
+              <textarea name="message"
                 placeholder={t("contact.form.messagePlaceholder")}
                 rows="4"
                 className="w-full bg-white/40 border border-white/60 text-ocean-dark placeholder-ocean-dark/40 px-5 py-3.5 rounded-xl font-sans text-sm outline-none resize-none focus:bg-white/80 focus:border-ocean-main transition-all duration-300 shadow-sm"
                 required
               ></textarea>
 
+              {status === "error" && (
+
+                <p role="alert" className="text-red-600 text-sm font-medium">{t("contact.form.error")}</p>
+
+              )}
+
               <button
                 type="submit"
+                disabled={status === "sending"}
                 className="group w-full flex items-center justify-center gap-3 bg-ocean-dark hover:bg-ocean-main text-white px-8 py-4 rounded-xl font-sans font-medium text-sm transition-all duration-300 shadow-lg mt-2"
               >
                 {t("contact.form.buttonText")}
@@ -148,6 +171,7 @@ const ContactSection = () => {
                 />
               </button>
             </form>
+)}
           </div>
         </motion.div>
       </div>

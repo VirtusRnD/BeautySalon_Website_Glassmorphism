@@ -2,10 +2,26 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheckCircle } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import { config } from "../config";
+import { submitForm } from "../lib/submitForm";
 
 const BookingModal = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | sending | error
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const values = Object.fromEntries(new FormData(e.currentTarget));
+    setStatus("sending");
+    try {
+      await submitForm(values, { email: config.footer.brand.email, subject: t("booking.title") });
+      setStatus("idle");
+      setIsOpen(false);
+    } catch {
+      setStatus("error");
+    }
+  }
 
   // 👑 SCROLL LOCK & HASH LISTENER MAGIC
   useEffect(() => {
@@ -95,21 +111,18 @@ const BookingModal = () => {
 
             {/* Form */}
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setIsOpen(false);
-              }}
+              onSubmit={handleSubmit}
               className="flex flex-col gap-4"
             >
               {/* Name & Phone */}
               <div className="flex flex-col sm:flex-row gap-4 w-full">
-                <input
+                <input name="name"
                   type="text"
                   placeholder={t("booking.namePlaceholder")}
                   required
                   className="w-full bg-white/50 border border-white/60 text-ocean-dark placeholder-ocean-dark/50 px-5 py-3.5 rounded-2xl font-sans text-sm outline-none focus:bg-white/90 focus:border-ocean-main transition-all shadow-sm"
                 />
-                <input
+                <input name="phone"
                   type="tel"
                   placeholder={t("booking.phonePlaceholder")}
                   required
@@ -118,7 +131,7 @@ const BookingModal = () => {
               </div>
 
               {/* Service Dropdown */}
-              <select
+              <select name="service"
                 required
                 defaultValue=""
                 className="w-full bg-white/50 border border-white/60 text-ocean-dark px-5 py-3.5 rounded-2xl font-sans text-sm outline-none focus:bg-white/90 focus:border-ocean-main transition-all shadow-sm appearance-none"
@@ -135,12 +148,12 @@ const BookingModal = () => {
 
               {/* Date & Time */}
               <div className="flex flex-col sm:flex-row gap-4 w-full">
-                <input
+                <input name="date"
                   type="date"
                   required
                   className="w-full bg-white/50 border border-white/60 text-ocean-dark px-5 py-3.5 rounded-2xl font-sans text-sm outline-none focus:bg-white/90 focus:border-ocean-main transition-all shadow-sm"
                 />
-                <input
+                <input name="time"
                   type="time"
                   required
                   className="w-full bg-white/50 border border-white/60 text-ocean-dark px-5 py-3.5 rounded-2xl font-sans text-sm outline-none focus:bg-white/90 focus:border-ocean-main transition-all shadow-sm"
@@ -148,8 +161,12 @@ const BookingModal = () => {
               </div>
 
               {/* Submit Button */}
+              {status === "error" && (
+                <p role="alert" className="text-red-600 text-sm font-medium">{t("booking.error")}</p>
+              )}
               <button
                 type="submit"
+                disabled={status === "sending"}
                 className="group w-full flex items-center justify-center gap-2 bg-ocean-dark hover:bg-ocean-main text-white px-8 py-4 rounded-2xl font-sans font-medium text-sm transition-all duration-300 shadow-xl mt-4"
               >
                 {t("booking.buttonText")}
